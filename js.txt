@@ -1,0 +1,52 @@
+type (cd..) in terminal  for going back to prev repo/folder
+
+
+
+*******XXXXX*****
+the total number of supported data types in JavaScript are 8 :
+1. String
+2. Number
+3. Bigint
+4. Boolean
+5. Undefined
+6. Null
+7. Symbol
+8. Object
+*******XXXXX*****
+
+
+JS is a dynamically typed language.
+
+
+
+*******XXXXX*****
+//       var 
+var lets a particular variable to be declared again thats why recommend to not use it .
+
+-> Hoisitng can be done using var  - it does not throws an error on declaring a variable after console statement.
+eg - 
+console.log(x);
+var x = 10;
+
+output - Undefined 
+*******XXXXX*****
+
+*******XXXXX*****
+-arithmetic +,-,*,/,**,%
+(https://www.w3schools.com/Js/js_arithmetic.asp)
+-assingment +=,-=,*=,/=
+-logical
+-comparison.....etc
+js operator precedence
+https://www.w3schools.com/Js/js_precedence.asp
+
+*******XXXXX*****
+ternary operator
+(condition):true statement?false statement
+*******XXXXX*****
+
+*******XXXXX*****
+template literal in js --> backtick (`)
+
+*******XXXXX*****
+
