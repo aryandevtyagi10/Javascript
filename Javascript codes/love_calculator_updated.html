@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Love Calculator</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #ffe6f0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    h1 {
+      color: #cc0066;
+    }
+    input, button {
+      padding: 10px;
+      margin: 10px;
+      font-size: 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+    }
+    button {
+      background: #ff4da6;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #e60073;
+    }
+    #result {
+      margin-top: 20px;
+      font-size: 20px;
+      color: #cc0066;
+      animation: fadeIn 1s ease-in-out;
+      padding: 20px;
+      border: 2px dashed #ff99cc;
+      border-radius: 12px;
+      background: #fff0f5;
+      text-align: center;
+    }
+    .heart {
+      font-size: 30px;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.3); }
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Love Calculator</h1>
+  <input type="text" id="yourName" placeholder="Enter your name">
+  <input type="text" id="partnerName" placeholder="Enter partner's name">
+  <button onclick="calculateLove()">Calculate</button>
+  <button onclick="resetForm()">Reset</button>
+  <button onclick="downloadImage()">Download Result</button>
+  <button onclick="shareOnWhatsApp()">Share on WhatsApp</button>
+
+  <div id="result"></div>
+
+  <!-- html2canvas library -->
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+  <script>
+    function calculateLove() {
+      var yourName = document.getElementById("yourName").value.trim();
+      var partnerName = document.getElementById("partnerName").value.trim();
+      var result = document.getElementById("result");
+
+      if (!yourName || !partnerName) {
+        result.innerHTML = "<p style='color:red;'>Please enter both names.</p>";
+        return;
+      }
+
+      var lovePercent = Math.floor(Math.random() * 100) + 1;
+      let message = "";
+
+      if (lovePercent > 80) {
+        message = `Congratulations ${yourName} & ${partnerName}!<br>Your love is <strong>${lovePercent}%</strong> <span class="heart">❤️❤️</span>`;
+      } else if (lovePercent > 40) {
+        message = `Nice! ${yourName} & ${partnerName}, your love is <strong>${lovePercent}%</strong> <span class="heart">❤️</span>`;
+      } else {
+        message = `Oops! Not enough love between ${yourName} & ${partnerName}.<br>Only <strong>${lovePercent}%</strong> <span class="heart">💔</span>`;
+      }
+
+      result.innerHTML = message;
+    }
+
+    function resetForm() {
+      document.getElementById("yourName").value = "";
+      document.getElementById("partnerName").value = "";
+      document.getElementById("result").innerHTML = "";
+    }
+
+    function downloadImage() {
+      const resultDiv = document.getElementById("result");
+
+      if (resultDiv.innerHTML.trim() === "") {
+        alert("Please calculate your love result first!");
+        return;
+      }
+
+      html2canvas(resultDiv).then(canvas => {
+        const link = document.createElement("a");
+        link.download = "love-result.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      });
+    }
+
+    function shareOnWhatsApp() {
+      const yourName = document.getElementById("yourName").value.trim();
+      const partnerName = document.getElementById("partnerName").value.trim();
+      const resultText = document.getElementById("result").innerText;
+
+      if (!yourName || !partnerName || !resultText) {
+        alert("Please calculate your love result first!");
+        return;
+      }
+
+      const message = `Love Calculator Result:\n${yourName} ❤️ ${partnerName}\n${resultText}`;
+      const whatsappURL = `https://wa.me/?text=${encodeURIComponent(message)}`;
+      window.open(whatsappURL, "_blank");
+    }
+  </script>
+
+</body>
+</html>
