@@ -3,21 +3,23 @@ body {
   background: linear-gradient(to right, #74ebd5, #ACB6E5);
   color: #333;
   text-align: center;
-  padding: 50px;
+  padding: 50px 20px;
+  margin: 0;
 }
 
 input {
   padding: 10px;
-  width: 250px;
+  width: 80%;
+  max-width: 300px;
   border: none;
   border-radius: 5px;
-  margin-right: 10px;
   font-size: 16px;
 }
 
 button {
   padding: 10px 20px;
   font-size: 16px;
+  margin-top: 10px;
   background-color: #007BFF;
   color: white;
   border: none;
@@ -36,4 +38,11 @@ button:hover {
   border-radius: 10px;
   display: inline-block;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+  max-width: 300px;
+  width: 100%;
+}
+
+img {
+  width: 100px;
+  height: 100px;
 }
