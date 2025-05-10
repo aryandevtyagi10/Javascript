@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Procedural Murder Mystery</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+        .game-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        button {
+            background-color: #8b0000;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .clue {
+            margin: 10px 0;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-left: 3px solid #8b0000;
+        }
+        .suspect {
+            margin: 15px 0;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+        }
+        .correct {
+            background-color: #e6ffe6;
+            border-color: #4CAF50;
+        }
+        .incorrect {
+            background-color: #ffe6e6;
+            border-color: #f44336;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <h1>Murder at the <span id="location">Manor</span></h1>
+        <div id="victim-info"></div>
+        <div id="case-summary"></div>
+        <div id="clues-container"></div>
+        <div id="suspects-container"></div>
+        <button id="accuse-btn">Make Accusation</button>
+        <div id="accusation-modal" style="display:none;">
+            <h3>Who committed the murder?</h3>
+            <div id="accusation-options"></div>
+            <button id="submit-accusation">Submit</button>
+        </div>
+        <div id="result"></div>
+        <button id="new-game" style="display:none;">New Mystery</button>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
