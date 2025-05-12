@@ -18,7 +18,6 @@
   </style>
 </head>
 <body class="min-h-screen flex flex-col">
-  <!-- Header -->
   <header class="text-center p-6 neon text-4xl bg-black border-b-4 border-pink-500">
     80s Rock Metal Song Recommender
   </header>
@@ -31,68 +30,112 @@
     <button class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-white">Glam</button>
   </section>
 
-  <!-- Song Display Area -->
+  <!-- Song Display -->
   <main class="flex-grow p-6">
     <div class="bg-black rounded-xl shadow-xl p-6 text-center max-w-xl mx-auto border border-purple-500">
       <h2 class="text-2xl mb-4 neon">Now Playing</h2>
-      <iframe class="w-full h-60 rounded-lg" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Now Playing"></iframe>
-      <p class="mt-4">Song: Never Gonna Give You Up</p>
-      <p>Artist: Rick Astley</p>
-      <p>Genre: Synth Pop</p>
+      <iframe class="w-full h-60 rounded-lg" src="" title="Now Playing" allowfullscreen></iframe>
+      <p class="mt-4" id="songTitle">Song:</p>
+      <p id="artist">Artist:</p>
+      <p id="genre">Genre:</p>
+
+      <div class="mt-4 flex justify-center gap-4">
+        <button id="nextBtn" class="bg-green-600 hover:bg-green-700 px-4 py-2 rounded-lg">Next Song</button>
+        <button id="saveBtn" class="bg-yellow-500 hover:bg-yellow-600 px-4 py-2 rounded-lg">Save to Favorites</button>
+      </div>
+    </div>
+
+    <!-- Favorites List -->
+    <div class="mt-10 max-w-xl mx-auto bg-gray-900 p-4 rounded-lg border border-pink-500">
+      <h3 class="text-xl mb-2 neon">Favorites</h3>
+      <ul id="favoritesList" class="list-disc list-inside space-y-1"></ul>
     </div>
   </main>
 
-  <!-- Footer -->
   <footer class="text-center p-4 bg-black border-t-4 border-pink-500">
     <p>Made with <span class="text-pink-400">passion</span> for 80s rock vibes!</p>
   </footer>
 
 <script>
-  const LASTFM_API_KEY = "YOUR_LASTFM_API_KEY";       // <-- Replace with your Last.fm API key
-  const YOUTUBE_API_KEY = "YOUR_YOUTUBE_API_KEY";     // <-- Replace with your YouTube Data API key
+  const LASTFM_API_KEY = "YOUR_LASTFM_API_KEY";       // Replace with your Last.fm key
+  const YOUTUBE_API_KEY = "YOUR_YOUTUBE_API_KEY";     // Replace with your YouTube key
 
   const genreButtons = document.querySelectorAll("section button");
   const iframe = document.querySelector("iframe");
-  const songTitle = document.querySelector("main p:nth-of-type(1)");
-  const artist = document.querySelector("main p:nth-of-type(2)");
-  const genreTag = document.querySelector("main p:nth-of-type(3)");
+  const songTitle = document.getElementById("songTitle");
+  const artist = document.getElementById("artist");
+  const genreTag = document.getElementById("genre");
+  const nextBtn = document.getElementById("nextBtn");
+  const saveBtn = document.getElementById("saveBtn");
+  const favoritesList = document.getElementById("favoritesList");
+
+  let currentGenre = "";
+  let currentTracks = [];
+  let trackIndex = 0;
 
   genreButtons.forEach(button => {
     button.addEventListener("click", () => {
-      const genre = button.textContent.toLowerCase();
-      fetchFromLastFM(genre);
+      currentGenre = button.textContent.toLowerCase();
+      fetchTrackList(currentGenre);
     });
   });
 
-  async function fetchFromLastFM(tag) {
-    const url = `https://ws.audioscrobbler.com/2.0/?method=tag.gettoptracks&tag=${tag}&api_key=${LASTFM_API_KEY}&format=json&limit=1`;
+  nextBtn.addEventListener("click", playNextTrack);
+
+  saveBtn.addEventListener("click", () => {
+    if (currentTracks.length > 0) {
+      const track = currentTracks[trackIndex];
+      const entry = `${track.name} by ${track.artist.name}`;
+      let favs = JSON.parse(localStorage.getItem("favorites") || "[]");
+      if (!favs.includes(entry)) {
+        favs.push(entry);
+        localStorage.setItem("favorites", JSON.stringify(favs));
+        renderFavorites();
+      }
+    }
+  });
+
+  function renderFavorites() {
+    const favs = JSON.parse(localStorage.getItem("favorites") || "[]");
+    favoritesList.innerHTML = "";
+    favs.forEach(fav => {
+      const li = document.createElement("li");
+      li.textContent = fav;
+      favoritesList.appendChild(li);
+    });
+  }
+
+  async function fetchTrackList(tag) {
+    const url = `https://ws.audioscrobbler.com/2.0/?method=tag.gettoptracks&tag=${tag}&api_key=${LASTFM_API_KEY}&format=json&limit=10`;
 
     try {
       const res = await fetch(url);
       const data = await res.json();
-      const track = data.tracks.track[0];
-      const title = track.name;
-      const artistName = track.artist.name;
-
-      songTitle.textContent = `Song: ${title}`;
-      artist.textContent = `Artist: ${artistName}`;
-      genreTag.textContent = `Genre: ${tag}`;
-
-      const query = `${title} ${artistName}`;
-      fetchYouTubeVideo(query);
+      currentTracks = data.tracks.track;
+      trackIndex = 0;
+      playTrack(currentTracks[trackIndex], tag);
     } catch (err) {
-      console.error("Last.fm API error", err);
-      songTitle.textContent = "Song: Not found";
-      artist.textContent = "Artist: -";
-      genreTag.textContent = "Genre: -";
-      iframe.src = "";
+      console.error("Error fetching tracks", err);
     }
   }
 
-  async function fetchYouTubeVideo(query) {
-    const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}`;
+  function playNextTrack() {
+    if (currentTracks.length === 0) return;
+    trackIndex = (trackIndex + 1) % currentTracks.length;
+    playTrack(currentTracks[trackIndex], currentGenre);
+  }
 
+  async function playTrack(track, genre) {
+    const title = track.name;
+    const artistName = track.artist.name;
+
+    songTitle.textContent = `Song: ${title}`;
+    artist.textContent = `Artist: ${artistName}`;
+    genreTag.textContent = `Genre: ${genre}`;
+
+    const query = `${title} ${artistName}`;
     try {
+      const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}`;
       const res = await fetch(ytUrl);
       const data = await res.json();
       const videoId = data.items[0].id.videoId;
@@ -102,6 +145,9 @@
       iframe.src = "";
     }
   }
+
+  // Load favorites on page load
+  renderFavorites();
 </script>
 </body>
 </html>
