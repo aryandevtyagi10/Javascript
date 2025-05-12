@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rock Recommender</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Metal+Mania&display=swap');
+    body {
+      font-family: 'Metal Mania', cursive;
+      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+      color: #f1f1f1;
+    }
+    .neon {
+      text-shadow: 0 0 5px #f0f, 0 0 10px #f0f, 0 0 20px #f0f;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col">
+  <!-- Header -->
+  <header class="text-center p-6 neon text-4xl bg-black border-b-4 border-pink-500">
+    80s Rock Metal Song Recommender
+  </header>
+
+  <!-- Genre Selector -->
+  <section class="p-4 flex flex-wrap justify-center gap-4">
+    <button class="bg-pink-600 hover:bg-pink-700 px-4 py-2 rounded-lg text-white">Rock</button>
+    <button class="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg text-white">Metal</button>
+    <button class="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg text-white">Synth</button>
+    <button class="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg text-white">Glam</button>
+  </section>
+
+  <!-- Song Display Area -->
+  <main class="flex-grow p-6">
+    <div class="bg-black rounded-xl shadow-xl p-6 text-center max-w-xl mx-auto border border-purple-500">
+      <h2 class="text-2xl mb-4 neon">Now Playing</h2>
+      <iframe class="w-full h-60 rounded-lg" src="https://www.youtube.com/embed/dQw4w9WgXcQ" title="Now Playing"></iframe>
+      <p class="mt-4">Song: Never Gonna Give You Up</p>
+      <p>Artist: Rick Astley</p>
+      <p>Genre: Synth Pop</p>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center p-4 bg-black border-t-4 border-pink-500">
+    <p>Made with <span class="text-pink-400">passion</span> for 80s rock vibes!</p>
+  </footer>
+</body>
+</html>
