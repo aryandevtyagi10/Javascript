@@ -48,7 +48,9 @@
   </footer>
 
 <script>
-  const API_KEY = "9b2ad8156ef38abf8eb7e8b6505f34b6"; // replace with your key
+  const LASTFM_API_KEY = "YOUR_LASTFM_API_KEY";       // <-- Replace with your Last.fm API key
+  const YOUTUBE_API_KEY = "YOUR_YOUTUBE_API_KEY";     // <-- Replace with your YouTube Data API key
+
   const genreButtons = document.querySelectorAll("section button");
   const iframe = document.querySelector("iframe");
   const songTitle = document.querySelector("main p:nth-of-type(1)");
@@ -63,7 +65,7 @@
   });
 
   async function fetchFromLastFM(tag) {
-    const url = `https://ws.audioscrobbler.com/2.0/?method=tag.gettoptracks&tag=${tag}&api_key=${API_KEY}&format=json&limit=1`;
+    const url = `https://ws.audioscrobbler.com/2.0/?method=tag.gettoptracks&tag=${tag}&api_key=${LASTFM_API_KEY}&format=json&limit=1`;
 
     try {
       const res = await fetch(url);
@@ -76,7 +78,6 @@
       artist.textContent = `Artist: ${artistName}`;
       genreTag.textContent = `Genre: ${tag}`;
 
-      // Optional: try to embed a YouTube search result for the song
       const query = `${title} ${artistName}`;
       fetchYouTubeVideo(query);
     } catch (err) {
@@ -84,13 +85,12 @@
       songTitle.textContent = "Song: Not found";
       artist.textContent = "Artist: -";
       genreTag.textContent = "Genre: -";
+      iframe.src = "";
     }
   }
 
   async function fetchYouTubeVideo(query) {
-    const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${encodeURIComponent(
-      query
-    )}&key=9b2ad8156ef38abf8eb7e8b6505f34b6`; // Optional, for video embedding
+    const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${encodeURIComponent(query)}&key=${YOUTUBE_API_KEY}`;
 
     try {
       const res = await fetch(ytUrl);
@@ -98,7 +98,7 @@
       const videoId = data.items[0].id.videoId;
       iframe.src = `https://www.youtube.com/embed/${videoId}`;
     } catch (err) {
-      console.error("YouTube fetch failed", err);
+      console.error("YouTube API error", err);
       iframe.src = "";
     }
   }
