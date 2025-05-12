@@ -46,5 +46,62 @@
   <footer class="text-center p-4 bg-black border-t-4 border-pink-500">
     <p>Made with <span class="text-pink-400">passion</span> for 80s rock vibes!</p>
   </footer>
+
+<script>
+  const API_KEY = "9b2ad8156ef38abf8eb7e8b6505f34b6"; // replace with your key
+  const genreButtons = document.querySelectorAll("section button");
+  const iframe = document.querySelector("iframe");
+  const songTitle = document.querySelector("main p:nth-of-type(1)");
+  const artist = document.querySelector("main p:nth-of-type(2)");
+  const genreTag = document.querySelector("main p:nth-of-type(3)");
+
+  genreButtons.forEach(button => {
+    button.addEventListener("click", () => {
+      const genre = button.textContent.toLowerCase();
+      fetchFromLastFM(genre);
+    });
+  });
+
+  async function fetchFromLastFM(tag) {
+    const url = `https://ws.audioscrobbler.com/2.0/?method=tag.gettoptracks&tag=${tag}&api_key=${API_KEY}&format=json&limit=1`;
+
+    try {
+      const res = await fetch(url);
+      const data = await res.json();
+      const track = data.tracks.track[0];
+      const title = track.name;
+      const artistName = track.artist.name;
+
+      songTitle.textContent = `Song: ${title}`;
+      artist.textContent = `Artist: ${artistName}`;
+      genreTag.textContent = `Genre: ${tag}`;
+
+      // Optional: try to embed a YouTube search result for the song
+      const query = `${title} ${artistName}`;
+      fetchYouTubeVideo(query);
+    } catch (err) {
+      console.error("Last.fm API error", err);
+      songTitle.textContent = "Song: Not found";
+      artist.textContent = "Artist: -";
+      genreTag.textContent = "Genre: -";
+    }
+  }
+
+  async function fetchYouTubeVideo(query) {
+    const ytUrl = `https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&maxResults=1&q=${encodeURIComponent(
+      query
+    )}&key=9b2ad8156ef38abf8eb7e8b6505f34b6`; // Optional, for video embedding
+
+    try {
+      const res = await fetch(ytUrl);
+      const data = await res.json();
+      const videoId = data.items[0].id.videoId;
+      iframe.src = `https://www.youtube.com/embed/${videoId}`;
+    } catch (err) {
+      console.error("YouTube fetch failed", err);
+      iframe.src = "";
+    }
+  }
+</script>
 </body>
 </html>
