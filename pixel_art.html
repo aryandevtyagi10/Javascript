@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pixel Time Canvas</title>
+  <style>
+    :root {
+      --bg-dark: #111;
+      --text-dark: #fff;
+      --canvas-border-dark: #555;
+      --bg-light: #f1f1f1;
+      --text-light: #111;
+      --canvas-border-light: #aaa;
+    }
+
+    body {
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: 'Courier New', monospace;
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
+      transition: 0.3s;
+    }
+
+    h1 {
+      margin: 1rem 0 0.5rem;
+    }
+
+    canvas {
+      border: 2px solid var(--canvas-border-dark);
+      image-rendering: pixelated;
+      box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+      margin-bottom: 1rem;
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      margin-bottom: 2rem;
+    }
+
+    button {
+      background: #222;
+      color: #fff;
+      border: 1px solid #444;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 0.9rem;
+      transition: background 0.3s;
+    }
+
+    button:hover {
+      background: #333;
+    }
+
+    body.light-mode {
+      background-color: var(--bg-light);
+      color: var(--text-light);
+    }
+
+    body.light-mode canvas {
+      border-color: var(--canvas-border-light);
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+    }
+
+    body.light-mode button {
+      background: #ddd;
+      color: #111;
+      border-color: #aaa;
+    }
+
+    body.light-mode button:hover {
+      background: #ccc;
+    }
+  </style>
+</head>
+<body>
+  <h1>Pixel Time Canvas</h1>
+  <canvas id="pixelCanvas"></canvas>
+
+  <div class="controls">
+    <button onclick="resetCanvas()">Reset</button>
+    <button onclick="toggleTheme()">Toggle Theme</button>
+    <button onclick="exportCanvas()">Export PNG</button>
+    <button onclick="togglePixelBorder()">Toggle Pixel Border</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("pixelCanvas");
+    const ctx = canvas.getContext("2d");
+
+    const cols = 60;
+    const rows = 60;
+    const pixelSize = 10;
+    let showBorders = false;
+
+    canvas.width = cols * pixelSize;
+    canvas.height = rows * pixelSize;
+
+    function getSecondsSinceMidnight() {
+      const now = new Date();
+      return now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+    }
+
+    function drawPixel(index) {
+      const x = (index % cols) * pixelSize;
+      const y = Math.floor(index / cols) * pixelSize;
+
+      const hue = index % 360;
+      ctx.fillStyle = `hsl(${hue}, 70%, 50%)`;
+      ctx.fillRect(x, y, pixelSize, pixelSize);
+
+      if (showBorders) {
+        ctx.strokeStyle = "rgba(0, 0, 0, 0.2)";
+        ctx.strokeRect(x, y, pixelSize, pixelSize);
+      }
+    }
+
+    function updateCanvas() {
+      const currentSecond = getSecondsSinceMidnight();
+      drawPixel(currentSecond);
+    }
+
+    function initializeCanvas() {
+      const currentSecond = getSecondsSinceMidnight();
+      for (let i = 0; i <= currentSecond; i++) {
+        drawPixel(i);
+      }
+    }
+
+    function resetCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      initializeCanvas();
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("light-mode");
+    }
+
+    function exportCanvas() {
+      const link = document.createElement("a");
+      link.download = "pixel-time-canvas.png";
+      link.href = canvas.toDataURL();
+      link.click();
+    }
+
+    function togglePixelBorder() {
+      showBorders = !showBorders;
+      resetCanvas();
+    }
+
+    initializeCanvas();
+    setInterval(updateCanvas, 1000);
+  </script>
+</body>
+</html>
