@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Pixel Time Canvas</title>
   <style>
     :root {
@@ -26,14 +26,21 @@
     }
 
     h1 {
-      margin: 1rem 0 0.5rem;
+      margin: 1rem 0 0.3rem;
+    }
+
+    #timeDisplay {
+      font-size: 1.2rem;
+      margin-bottom: 1rem;
+      letter-spacing: 1px;
     }
 
     canvas {
       border: 2px solid var(--canvas-border-dark);
       image-rendering: pixelated;
-      box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+      box-shadow: 0 0 50px rgba(0, 255, 255, 0.4);
       margin-bottom: 1rem;
+      transition: box-shadow 0.3s;
     }
 
     .controls {
@@ -66,7 +73,7 @@
 
     body.light-mode canvas {
       border-color: var(--canvas-border-light);
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+      box-shadow: 0 0 50px rgba(0, 0, 0, 0.2);
     }
 
     body.light-mode button {
@@ -82,6 +89,7 @@
 </head>
 <body>
   <h1>Pixel Time Canvas</h1>
+  <div id="timeDisplay">Loading time...</div>
   <canvas id="pixelCanvas"></canvas>
 
   <div class="controls">
@@ -94,6 +102,7 @@
   <script>
     const canvas = document.getElementById("pixelCanvas");
     const ctx = canvas.getContext("2d");
+    const timeDisplay = document.getElementById("timeDisplay");
 
     const cols = 60;
     const rows = 60;
@@ -108,34 +117,51 @@
       return now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
     }
 
+    function formatTime() {
+      const now = new Date();
+      return now.toLocaleTimeString();
+    }
+
+    function updateTimeDisplay() {
+      timeDisplay.textContent = formatTime();
+    }
+
     function drawPixel(index) {
       const x = (index % cols) * pixelSize;
       const y = Math.floor(index / cols) * pixelSize;
 
       const hue = index % 360;
+      ctx.shadowColor = `hsl(${hue}, 100%, 60%)`;
+      ctx.shadowBlur = 8;
+
       ctx.fillStyle = `hsl(${hue}, 70%, 50%)`;
       ctx.fillRect(x, y, pixelSize, pixelSize);
 
       if (showBorders) {
+        ctx.shadowBlur = 0;
         ctx.strokeStyle = "rgba(0, 0, 0, 0.2)";
         ctx.strokeRect(x, y, pixelSize, pixelSize);
       }
+
+      ctx.shadowBlur = 0; // reset blur after each draw
     }
 
     function updateCanvas() {
       const currentSecond = getSecondsSinceMidnight();
       drawPixel(currentSecond);
+      updateTimeDisplay();
     }
 
     function initializeCanvas() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       const currentSecond = getSecondsSinceMidnight();
       for (let i = 0; i <= currentSecond; i++) {
         drawPixel(i);
       }
+      updateTimeDisplay();
     }
 
     function resetCanvas() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
       initializeCanvas();
     }
 
@@ -155,6 +181,7 @@
       resetCanvas();
     }
 
+    // Initialize
     initializeCanvas();
     setInterval(updateCanvas, 1000);
   </script>
