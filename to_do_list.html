@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Coding & Lectures Tracker</title>
+    <style>
+        :root {
+            --primary: #3b82f6;
+            --primary-dark: #2563eb;
+            --secondary: #8b5cf6;
+            --light: #f3f4f6;
+            --dark: #1f2937;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+        }
+        
+        /* Previous CSS remains the same, adding new styles below */
+        
+        .task-date {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-left: 0.5rem;
+        }
+        
+        .edit-btn {
+            background-color: var(--warning);
+            color: white;
+            border: none;
+            border-radius: 0.25rem;
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        
+        .edit-btn:hover {
+            background-color: #d97706;
+        }
+        
+        .sort-controls {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        
+        #sort-select {
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+        }
+        
+        .edit-input {
+            flex-grow: 1;
+            padding: 0.25rem 0.5rem;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Enhanced Coding & Lectures Tracker</h1>
+            <div class="stats">
+                <div class="stat">Total: <span id="total-count">0</span></div>
+                <div class="stat">Completed: <span id="completed-count">0</span></div>
+                <div class="stat">Coding: <span id="coding-count">0</span></div>
+                <div class="stat">Lectures: <span id="lecture-count">0</span></div>
+            </div>
+        </header>
+        
+        <div class="controls">
+            <form id="add-task-form" class="add-form">
+                <input 
+                    type="text" 
+                    id="task-input" 
+                    placeholder="Add a new task or lecture..."
+                    aria-label="Task description"
+                    aria-required="true"
+                    required
+                >
+                <select id="category-select" aria-label="Select task category">
+                    <option value="coding">Coding</option>
+                    <option value="lecture">Lecture</option>
+                </select>
+                <button type="submit">Add</button>
+            </form>
+            
+            <div class="filter-controls">
+                <button class="filter-btn active" data-filter="all">All</button>
+                <button class="filter-btn" data-filter="active">Active</button>
+                <button class="filter-btn" data-filter="completed">Completed</button>
+                <button class="filter-btn" data-filter="coding">Coding</button>
+                <button class="filter-btn" data-filter="lecture">Lectures</button>
+            </div>
+            
+            <div class="sort-controls">
+                <label for="sort-select">Sort by:</label>
+                <select id="sort-select" aria-label="Sort tasks">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                </select>
+            </div>
+        </div>
+        
+        <ul id="task-list" class="tasks">
+            <!-- Tasks will be added here -->
+        </ul>
+        
+        <div id="empty-state" class="empty-state">
+            <p>You don't have any tasks yet!</p>
+            <p>Add a new task or lecture to get started.</p>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // DOM elements
+            const taskForm = document.getElementById('add-task-form');
+            const taskInput = document.getElementById('task-input');
+            const categorySelect = document.getElementById('category-select');
+            const taskList = document.getElementById('task-list');
+            const emptyState = document.getElementById('empty-state');
+            const filterButtons = document.querySelectorAll('.filter-btn');
+            const sortSelect = document.getElementById('sort-select');
+            
+            // Counters
+            const totalCount = document.getElementById('total-count');
+            const completedCount = document.getElementById('completed-count');
+            const codingCount = document.getElementById('coding-count');
+            const lectureCount = document.getElementById('lecture-count');
+            
+            // Current filter and sort
+            let currentFilter = 'all';
+            let currentSort = 'newest';
+            
+            // Load tasks from localStorage
+            let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+            
+            // Initial render
+            renderTasks();
+            updateCounters();
+            
+            // Event listeners
+            taskForm.addEventListener('submit', handleSubmit);
+            filterButtons.forEach(btn => btn.addEventListener('click', handleFilter));
+            sortSelect.addEventListener('change', handleSortChange);
+            
+            function handleSubmit(e) {
+                e.preventDefault();
+                const taskText = taskInput.value.trim();
+                const category = categorySelect.value;
+                
+                if (!taskText) return;
+                
+                if (tasks.some(t => t.text === taskText && t.category === category)) {
+                    alert('Task already exists in this category!');
+                    return;
+                }
+                
+                addTask(taskText, category);
+                taskInput.value = '';
+                taskInput.focus();
+            }
+            
+            function handleFilter(e) {
+                filterButtons.forEach(btn => btn.classList.remove('active'));
+                e.target.classList.add('active');
+                currentFilter = e.target.dataset.filter;
+                renderTasks();
+            }
+            
+            function handleSortChange(e) {
+                currentSort = e.target.value;
+                renderTasks();
+            }
+            
+            function addTask(text, category) {
+                const newTask = {
+                    id: Date.now().toString(),
+                    text,
+                    category,
+                    completed: false,
+                    createdAt: new Date().toISOString()
+                };
+                
+                tasks.push(newTask);
+                saveTasks();
+                renderTasks();
+                updateCounters();
+            }
+            
+            function deleteTask(id) {
+                tasks = tasks.filter(task => task.id !== id);
+                saveTasks();
+                renderTasks();
+                updateCounters();
+            }
+            
+            function toggleTaskCompletion(id) {
+                tasks = tasks.map(task => 
+                    task.id === id ? { ...task, completed: !task.completed } : task
+                );
+                saveTasks();
+                renderTasks();
+                updateCounters();
+            }
+            
+            function startEdit(taskId) {
+                const task = tasks.find(t => t.id === taskId);
+                const taskItem = document.querySelector(`[data-task-id="${taskId}"]`);
+                const textElement = taskItem.querySelector('.task-text');
+                
+                const editInput = document.createElement('input');
+                editInput.type = 'text';
+                editInput.className = 'edit-input';
+                editInput.value = task.text;
+                
+                const saveButton = document.createElement('button');
+                saveButton.textContent = 'Save';
+                saveButton.className = 'save-btn';
+                saveButton.addEventListener('click', () => 
+                    saveEdit(taskId, editInput.value.trim())
+                );
+                
+                textElement.replaceWith(editInput);
+                taskItem.querySelector('.edit-btn').replaceWith(saveButton);
+            }
+            
+            function saveEdit(taskId, newText) {
+                if (!newText) return;
+                
+                tasks = tasks.map(task => 
+                    task.id === taskId ? { ...task, text: newText } : task
+                );
+                
+                saveTasks();
+                renderTasks();
+            }
+            
+            function saveTasks() {
+                localStorage.setItem('tasks', JSON.stringify(tasks));
+            }
+            
+            function renderTasks() {
+                let filteredTasks = filterTasks();
+                filteredTasks = sortTasks(filteredTasks);
+                
+                taskList.innerHTML = '';
+                emptyState.style.display = filteredTasks.length ? 'none' : 'block';
+                
+                filteredTasks.forEach(task => {
+                    const taskItem = document.createElement('li');
+                    taskItem.className = `task-item ${task.completed ? 'completed' : ''}`;
+                    taskItem.dataset.taskId = task.id;
+                    
+                    taskItem.innerHTML = `
+                        <div class="task-content">
+                            <input 
+                                type="checkbox" 
+                                class="task-check" 
+                                ${task.completed ? 'checked' : ''}
+                                aria-label="${task.completed ? 'Mark incomplete' : 'Mark complete'}"
+                            >
+                            <p class="task-text">${task.text}
+                                <span class="task-category ${task.category}">
+                                    ${task.category === 'coding' ? 'Code' : 'Lecture'}
+                                </span>
+                                <span class="task-date">
+                                    ${new Date(task.createdAt).toLocaleDateString()}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="task-actions">
+                            <button class="edit-btn" aria-label="Edit task">✎</button>
+                            <button class="delete-btn" aria-label="Delete task">×</button>
+                        </div>
+                    `;
+                    
+                    // Add event listeners
+                    taskItem.querySelector('.task-check').addEventListener('change', () => 
+                        toggleTaskCompletion(task.id)
+                    );
+                    
+                    taskItem.querySelector('.delete-btn').addEventListener('click', () => 
+                        deleteTask(task.id)
+                    );
+                    
+                    taskItem.querySelector('.edit-btn').addEventListener('click', () => 
+                        startEdit(task.id)
+                    );
+                    
+                    taskList.appendChild(taskItem);
+                });
+            }
+            
+            function filterTasks() {
+                switch (currentFilter) {
+                    case 'active': return tasks.filter(t => !t.completed);
+                    case 'completed': return tasks.filter(t => t.completed);
+                    case 'coding': return tasks.filter(t => t.category === 'coding');
+                    case 'lecture': return tasks.filter(t => t.category === 'lecture');
+                    default: return tasks;
+                }
+            }
+            
+            function sortTasks(tasks) {
+                return tasks.sort((a, b) => 
+                    currentSort === 'newest' 
+                        ? new Date(b.createdAt) - new Date(a.createdAt)
+                        : new Date(a.createdAt) - new Date(b.createdAt)
+                );
+            }
+            
+            function updateCounters() {
+                totalCount.textContent = tasks.length;
+                completedCount.textContent = tasks.filter(t => t.completed).length;
+                codingCount.textContent = tasks.filter(t => t.category === 'coding').length;
+                lectureCount.textContent = tasks.filter(t => t.category === 'lecture').length;
+            }
+        });
+    </script>
+</body>
+</html>
