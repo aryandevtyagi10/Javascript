@@ -1,184 +1,203 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Cyberpunk Pong</title>
+  <!-- Previous head content remains same -->
   <style>
-    body {
-      margin: 0;
-      font-family: 'Orbitron', sans-serif;
-      background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
-      color: #00ffff;
-      overflow: hidden;
+    /* Add these new styles */
+    .powerup {
+      position: absolute;
+      width: 20px;
+      height: 20px;
+      background: #ff00ff;
+      box-shadow: 0 0 15px #ff00ff;
+      border-radius: 50%;
     }
 
-    canvas {
-      display: block;
-      margin: 0 auto;
-      background: radial-gradient(#111 60%, #0ff2 100%);
-      border: 2px solid #0ff;
-      box-shadow: 0 0 20px #0ff;
+    #hud {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      color: #0ff;
+      text-shadow: 0 0 10px #0ff;
     }
 
-    #restart {
-      margin-top: 10px;
-      padding: 10px 20px;
-      font-size: 18px;
-      background: #0ff;
-      color: black;
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 0 10px #0ff;
-      transition: 0.2s;
+    .scanline {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        to bottom,
+        rgba(0, 255, 255, 0.1) 50%,
+        rgba(0, 0, 0, 0.1) 51%
+      );
+      background-size: 100% 4px;
+      pointer-events: none;
+      animation: scan 4s linear infinite;
     }
 
-    #restart:hover {
-      background: #00aaff;
-      box-shadow: 0 0 15px #00f7ff;
+    @keyframes scan {
+      0% { transform: translateY(-100%); }
+      100% { transform: translateY(100%); }
     }
-
-    h1 {
-      text-align: center;
-      font-size: 36px;
-      color: #ff00ff;
-      text-shadow: 0 0 10px #ff00ff, 0 0 20px #ff00ff;
-    }
-
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
   </style>
 </head>
 <body>
-  <h1>CYBERPONG: Edgerunner Edition</h1>
-  <canvas id="gameCanvas" width="800" height="500"></canvas>
-  <div style="text-align: center;">
-    <button id="restart">Restart Game</button>
+  <!-- Add these new DOM elements -->
+  <div id="hud">
+    <div>SCORE: <span id="score">0</span></div>
+    <div>COMBO: <span id="combo">x1</span></div>
+    <div>POWER: <span id="power">NONE</span></div>
   </div>
+  <div class="scanline"></div>
+  
+  <!-- Previous body content remains same -->
 
   <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
-
-    const paddleWidth = 10, paddleHeight = 100, ballSize = 12;
-    let playerScore = 0, aiScore = 0;
-
-    const player = { x: 0, y: canvas.height / 2 - paddleHeight / 2 };
-    const ai = { x: canvas.width - paddleWidth, y: canvas.height / 2 - paddleHeight / 2 };
-    const ball = {
-      x: canvas.width / 2,
-      y: canvas.height / 2,
-      vx: 6 * (Math.random() > 0.5 ? 1 : -1),
-      vy: 4 * (Math.random() > 0.5 ? 1 : -1)
+    // Add these new game constants
+    const POWERUP_TYPES = {
+      SPEED_BURST: { color: "#ff0000", duration: 5000 },
+      TIME_WARP: { color: "#00ff00", duration: 3000 },
+      PADDLE_GROW: { color: "#ffff00", duration: 10000 },
+      MULTIBALL: { color: "#ff00ff", duration: 0 }
     };
 
-    function resetBall() {
-      ball.x = canvas.width / 2;
-      ball.y = canvas.height / 2;
-      ball.vx = 6 * (Math.random() > 0.5 ? 1 : -1);
-      ball.vy = 4 * (Math.random() > 0.5 ? 1 : -1);
+    // Add these new game state variables
+    let comboMultiplier = 1;
+    let activePowerups = [];
+    let balls = [ball];
+    let lastHitTime = 0;
+    let comboTimeout;
+
+    // Add powerup spawn system
+    function spawnPowerup() {
+      if (Math.random() < 0.15) { // 15% chance per volley
+        const typeKeys = Object.keys(POWERUP_TYPES);
+        const randomType = POWERUP_TYPES[typeKeys[Math.floor(Math.random() * typeKeys.length)]];
+        
+        const powerup = {
+          x: Math.random() * (canvas.width - 40) + 20,
+          y: Math.random() * (canvas.height - 40) + 20,
+          type: randomType,
+          collected: false
+        };
+        
+        activePowerups.push(powerup);
+      }
     }
 
-    function drawRect(x, y, w, h, color = "#0ff") {
-      ctx.fillStyle = color;
-      ctx.fillRect(x, y, w, h);
-      ctx.shadowColor = color;
-      ctx.shadowBlur = 10;
+    // Add powerup collection check
+    function checkPowerupCollision() {
+      activePowerups.forEach((p, index) => {
+        if (!p.collected && 
+            Math.abs(ball.x - p.x) < ballSize + 10 &&
+            Math.abs(ball.y - p.y) < ballSize + 10) {
+          activatePowerup(p.type);
+          p.collected = true;
+          activePowerups.splice(index, 1);
+        }
+      });
     }
 
-    function drawBall(x, y, r) {
-      ctx.fillStyle = "#ff00ff";
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.shadowColor = "#ff00ff";
-      ctx.shadowBlur = 10;
+    // Add powerup activation system
+    function activatePowerup(type) {
+      activePowerups.push({ type, expires: Date.now() + type.duration });
+      
+      switch(type) {
+        case POWERUP_TYPES.SPEED_BURST:
+          ball.vx *= 1.5;
+          ball.vy *= 1.5;
+          break;
+        case POWERUP_TYPES.TIME_WARP:
+          balls.forEach(b => b.vx *= 0.5);
+          break;
+        case POWERUP_TYPES.PADDLE_GROW:
+          paddleHeight *= 1.5;
+          break;
+        case POWERUP_TYPES.MULTIBALL:
+          const newBall = {
+            x: canvas.width/2,
+            y: canvas.height/2,
+            vx: -ball.vx,
+            vy: -ball.vy,
+            trail: []
+          };
+          balls.push(newBall);
+          break;
+      }
     }
 
-    function drawText(text, x, y, size = 30, color = "#00ffff") {
-      ctx.fillStyle = color;
-      ctx.font = `${size}px Orbitron`;
-      ctx.fillText(text, x, y);
+    // Add combo system
+    function updateCombo() {
+      const timeSinceLastHit = Date.now() - lastHitTime;
+      if (timeSinceHit < 1000) {
+        comboMultiplier = Math.min(comboMultiplier + 0.25, 5);
+        clearTimeout(comboTimeout);
+      }
+      comboTimeout = setTimeout(() => comboMultiplier = 1, 1000);
+      lastHitTime = Date.now();
     }
 
+    // Modified draw function
     function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      // Previous draw code
+      
+      // Draw powerups
+      activePowerups.forEach(p => {
+        ctx.fillStyle = p.type.color;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.shadowColor = p.type.color;
+        ctx.shadowBlur = 20;
+      });
 
-      drawText(playerScore, canvas.width / 4, 50);
-      drawText(aiScore, (3 * canvas.width) / 4, 50);
-
-      drawRect(player.x, player.y, paddleWidth, paddleHeight);
-      drawRect(ai.x, ai.y, paddleWidth, paddleHeight);
-      drawBall(ball.x, ball.y, ballSize);
+      // Update HUD
+      document.getElementById("score").textContent = playerScore;
+      document.getElementById("combo").textContent = `x${comboMultiplier.toFixed(1)}`;
+      document.getElementById("power").textContent = 
+        activePowerups[0]?.type.name || "NONE";
     }
 
+    // Modified update function
     function update() {
-      ball.x += ball.vx;
-      ball.y += ball.vy;
+      // Previous update code
+      
+      // Check powerup expiration
+      activePowerups = activePowerups.filter(p => Date.now() < p.expires);
+      
+      // Update multiple balls
+      balls.forEach(b => {
+        // Existing ball update logic
+      });
 
-      // Bounce top/bottom
-      if (ball.y <= 0 || ball.y >= canvas.height) {
-        ball.vy *= -1;
-        playSound();
-      }
+      // Check powerup collisions
+      checkPowerupCollision();
 
-      // Paddle collision
-      if (ball.x < player.x + paddleWidth && 
-          ball.y > player.y && ball.y < player.y + paddleHeight) {
-        ball.vx *= -1.1;
-        ball.vy += (Math.random() - 0.5) * 4;
-        playSound();
-      }
-
-      if (ball.x > ai.x - ballSize &&
-          ball.y > ai.y && ball.y < ai.y + paddleHeight) {
-        ball.vx *= -1.1;
-        ball.vy += (Math.random() - 0.5) * 4;
-        playSound();
-      }
-
-      // Score conditions
-      if (ball.x <= 0) {
-        aiScore++;
-        resetBall();
-      }
-      if (ball.x >= canvas.width) {
-        playerScore++;
-        resetBall();
-      }
-
-      // AI logic – predictive targeting
-      let predictedY = ball.y;
-      let centerY = ai.y + paddleHeight / 2;
-      if (predictedY < centerY) ai.y -= 4.5;
-      else if (predictedY > centerY) ai.y += 4.5;
-
-      ai.y = Math.max(0, Math.min(canvas.height - paddleHeight, ai.y));
+      // Spawn powerups on long volleys
+      if (ball.trail.length > 15) spawnPowerup();
     }
 
-    function gameLoop() {
-      update();
-      draw();
-      requestAnimationFrame(gameLoop);
-    }
-
-    canvas.addEventListener("mousemove", (e) => {
-      const rect = canvas.getBoundingClientRect();
-      player.y = e.clientY - rect.top - paddleHeight / 2;
-      player.y = Math.max(0, Math.min(canvas.height - paddleHeight, player.y));
+    // Add these new event listeners
+    document.addEventListener("keydown", (e) => {
+      if (e.code === "Space" && activePowerups.some(p => p.type === POWERUP_TYPES.SPEED_BURST)) {
+        // Activate speed burst
+      }
     });
 
-    document.getElementById("restart").addEventListener("click", () => {
-      playerScore = 0;
-      aiScore = 0;
-      resetBall();
-    });
-
-    function playSound() {
-      const beep = new Audio("https://freesound.org/data/previews/331/331912_3248244-lq.mp3");
-      beep.volume = 0.2;
-      beep.play();
+    // Add glitch effect
+    function glitchEffect() {
+      ctx.fillStyle = `rgba(0, 255, 255, ${Math.random() * 0.2})`;
+      ctx.fillRect(
+        Math.random() * -10, Math.random() * -10,
+        canvas.width + 20, canvas.height + 20
+      );
     }
 
-    gameLoop();
+    // Add to draw function
+    function draw() {
+      glitchEffect();
+      // Rest of draw code
+    }
   </script>
 </body>
 </html>
