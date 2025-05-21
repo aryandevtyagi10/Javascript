@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Monsoon Rain Alert</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to top, #b2ebf2, #e0f7fa);
+      margin: 0;
+      padding: 0;
+      color: #004d40;
+    }
+
+    header {
+      background-color: #00796b;
+      color: white;
+      text-align: center;
+      padding: 1.5rem 1rem;
+    }
+
+    main {
+      padding: 1rem;
+      max-width: 800px;
+      margin: auto;
+    }
+
+    .section {
+      background: white;
+      border-radius: 12px;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      color: #00796b;
+      margin-top: 0;
+    }
+
+    ul {
+      padding-left: 1.2rem;
+    }
+
+    .rain-animation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 100%;
+      pointer-events: none;
+      background: repeating-linear-gradient(
+        to bottom,
+        rgba(255, 255, 255, 0.2),
+        rgba(255, 255, 255, 0.2) 2px,
+        transparent 2px,
+        transparent 10px
+      );
+      animation: rain 0.5s linear infinite;
+    }
+
+    @keyframes rain {
+      0% { background-position: 0 0; }
+      100% { background-position: 0 10px; }
+    }
+
+    @media (max-width: 600px) {
+      header h1 {
+        font-size: 1.5rem;
+      }
+      .section {
+        padding: 0.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="rain-animation"></div>
+
+  <header>
+    <h1>Monsoon Rain Alert</h1>
+    <p>Stay informed. Stay safe.</p>
+  </header>
+
+  <main>
+    <div class="section">
+      <h2>Current Conditions</h2>
+      <p><strong>Status:</strong> Heavy Rainfall</p>
+      <p><strong>Advisory:</strong> Orange Alert in coastal and low-lying regions</p>
+    </div>
+
+    <div class="section">
+      <h2>Safety Tips</h2>
+      <ul>
+        <li>Avoid unnecessary travel.</li>
+        <li>Do not touch electric poles or wires in flooded areas.</li>
+        <li>Stay updated via local news and weather alerts.</li>
+      </ul>
+    </div>
+
+    <div class="section">
+      <h2>Emergency Contacts</h2>
+      <p><strong>Disaster Helpline:</strong> 108</p>
+      <p><strong>Local Control Room:</strong> +91-12345-67890</p>
+      <p><strong>Police:</strong> 100</p>
+    </div>
+  </main>
+</body>
+</html>
