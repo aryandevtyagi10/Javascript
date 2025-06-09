@@ -1,44 +1,76 @@
-document.getElementById("medicine-form").addEventListener("submit", function (e) {
-  e.preventDefault();
-
-  const name = document.getElementById("med-name").value;
-  const time = document.getElementById("med-time").value;
-  addReminder(name, time);
-});
-
-function addReminder(name, time) {
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("medicine-form");
   const list = document.getElementById("reminder-list");
+  const sound = document.getElementById("alert-sound");
 
-  const li = document.createElement("li");
-  li.textContent = `${name} at ${time}`;
-  list.appendChild(li);
+  let reminders = JSON.parse(localStorage.getItem("reminders")) || [];
 
-  // Save and notify
-  const reminderTime = new Date();
-  const [hours, minutes] = time.split(":");
-  reminderTime.setHours(hours);
-  reminderTime.setMinutes(minutes);
-  reminderTime.setSeconds(0);
+  function displayReminders() {
+    list.innerHTML = "";
+    reminders.sort((a, b) => a.time.localeCompare(b.time));
 
-  const delay = reminderTime.getTime() - Date.now();
-  if (delay > 0) {
-    setTimeout(() => {
-      notify(`Time to take your medicine: ${name}`);
-    }, delay);
-  } else {
-    alert("Time is already past!");
-  }
-}
-
-// Notification Permission and Logic
-function notify(message) {
-  if (Notification.permission === "granted") {
-    new Notification(message);
-  } else if (Notification.permission !== "denied") {
-    Notification.requestPermission().then(permission => {
-      if (permission === "granted") {
-        new Notification(message);
-      }
+    reminders.forEach((r, index) => {
+      const li = document.createElement("li");
+      li.innerHTML = `
+        ${r.name} at ${r.time} ${r.repeat ? "🔁" : ""}
+        <button class="delete-btn" data-index="${index}">✖</button>
+      `;
+      list.appendChild(li);
     });
   }
-}
+
+  function scheduleReminder({ name, time, repeat }) {
+    const [h, m] = time.split(":").map(Number);
+    const now = new Date();
+    const reminderTime = new Date();
+    reminderTime.setHours(h, m, 0, 0);
+
+    let delay = reminderTime - now;
+    if (delay < 0) delay += 86400000; // schedule for next day
+
+    setTimeout(() => {
+      notify(name);
+      if (repeat) scheduleReminder({ name, time, repeat });
+    }, delay);
+  }
+
+  function notify(name) {
+    sound.play();
+    if (Notification.permission === "granted") {
+      new Notification(`💊 Time to take your medicine: ${name}`);
+    }
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const name = document.getElementById("med-name").value;
+    const time = document.getElementById("med-time").value;
+    const repeat = document.getElementById("daily-repeat").checked;
+
+    const reminder = { name, time, repeat };
+    reminders.push(reminder);
+    localStorage.setItem("reminders", JSON.stringify(reminders));
+
+    scheduleReminder(reminder);
+    displayReminders();
+    form.reset();
+  });
+
+  list.addEventListener("click", (e) => {
+    if (e.target.classList.contains("delete-btn")) {
+      const index = e.target.getAttribute("data-index");
+      reminders.splice(index, 1);
+      localStorage.setItem("reminders", JSON.stringify(reminders));
+      displayReminders();
+    }
+  });
+
+  // Request notification permission
+  if (Notification.permission !== "granted") {
+    Notification.requestPermission();
+  }
+
+  // Initialize
+  reminders.forEach(scheduleReminder);
+  displayReminders();
+});
