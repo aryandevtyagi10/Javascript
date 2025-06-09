@@ -1,12 +1,10 @@
 body {
   margin: 0;
   font-family: 'Segoe UI', sans-serif;
-  background: #000;
+  background-color: #000;
   color: #fff;
   display: flex;
   justify-content: center;
-  align-items: flex-start;
-  height: 100vh;
   padding: 2rem;
 }
 
@@ -18,31 +16,40 @@ body {
 h1 {
   text-align: center;
   margin-bottom: 1.5rem;
+  font-size: 2rem;
 }
 
 form {
   display: flex;
   flex-direction: column;
   gap: 1rem;
-}
-
-input, button {
-  padding: 0.75rem;
-  border: none;
-  font-size: 1rem;
-}
-
-input {
   background: #111;
-  color: white;
-  border: 1px solid #333;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 0 10px rgba(255,255,255,0.1);
+}
+
+input[type="text"],
+input[type="time"],
+button {
+  padding: 0.75rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+}
+
+input[type="text"],
+input[type="time"] {
+  background: #222;
+  color: #fff;
 }
 
 button {
-  background: white;
-  color: black;
+  background: #fff;
+  color: #000;
+  font-weight: bold;
   cursor: pointer;
-  transition: 0.3s ease;
+  transition: background 0.3s;
 }
 
 button:hover {
@@ -57,7 +64,24 @@ button:hover {
 
 #reminder-list li {
   background: #111;
+  margin-bottom: 1rem;
   padding: 1rem;
-  margin-bottom: 0.75rem;
   border-left: 5px solid #fff;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 8px;
+  transition: 0.3s;
+}
+
+#reminder-list li:hover {
+  background: #222;
+}
+
+.delete-btn {
+  background: transparent;
+  color: red;
+  border: none;
+  font-size: 1.2rem;
+  cursor: pointer;
 }
