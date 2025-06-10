@@ -2,49 +2,202 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Sitcom Quote Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --primary-color: #6a0572; /* Deep Purple */
+      --secondary-color: #ab47bc; /* Light Purple */
+      --text-color-light: #f0f0f0;
+      --text-color-dark: #333;
+      --background-gradient: linear-gradient(135deg, #2c3e50, #4a0072); /* Dark Blue to Deep Purple */
+      --button-hover-color: #8e24aa; /* Medium Purple */
+      --card-background: rgba(255, 255, 255, 0.1);
+      --card-border: 1px solid rgba(255, 255, 255, 0.2);
+      --box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+    }
+
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Roboto', sans-serif;
       text-align: center;
-      padding: 100px;
-      transition: background 0.5s ease;
-      background-color: #222;
-      color: white;
-    }
-
-    button {
-      padding: 10px 20px;
-      font-size: 18px;
-      margin-top: 20px;
-      cursor: pointer;
-    }
-
-    #quote {
-      font-size: 24px;
-      margin-top: 40px;
-      background-color: rgba(0, 0, 0, 0.6);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: var(--background-gradient);
+      color: var(--text-color-light);
+      margin: 0;
       padding: 20px;
-      border-radius: 10px;
+      transition: background 1s ease-in-out, color 0.5s ease;
+      overflow-x: hidden; /* Prevent horizontal scroll */
+    }
+
+    .container {
+      background: var(--card-background);
+      border-radius: 15px;
+      padding: 40px;
+      max-width: 800px;
+      width: 95%;
+      box-shadow: var(--box-shadow);
+      backdrop-filter: blur(10px);
+      border: var(--card-border);
+      animation: fadeIn 1s ease-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    h1 {
+      font-size: 2.8em;
+      margin-bottom: 25px;
+      color: var(--text-color-light);
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+    }
+
+    #quote-display {
+      font-size: 1.8em;
+      margin-top: 30px;
+      margin-bottom: 30px;
+      background-color: rgba(0, 0, 0, 0.4);
+      padding: 25px 30px;
+      border-radius: 12px;
       display: inline-block;
-      max-width: 600px;
+      max-width: 90%;
+      line-height: 1.5;
+      min-height: 80px; /* Ensure consistent height */
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.2);
+      animation: slideInUp 0.8s ease-out;
+    }
+
+    @keyframes slideInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    #quote-text {
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    #quote-sitcom {
+      font-size: 0.8em;
+      font-style: italic;
+      opacity: 0.8;
     }
 
     #character-image {
       margin-top: 30px;
-      max-width: 400px;
+      max-width: 500px;
       width: 100%;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      border-radius: 12px;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+      border: 3px solid var(--secondary-color);
+      display: none;
+      animation: zoomIn 0.8s ease-out;
+    }
+
+    @keyframes zoomIn {
+      from { opacity: 0; transform: scale(0.8); }
+      to { opacity: 1; transform: scale(1); }
+    }
+
+    .controls {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 15px;
+      margin-top: 30px;
+    }
+
+    button {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 14px 28px;
+      font-size: 1.2em;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      outline: none;
+    }
+
+    button:hover {
+      background-color: var(--button-hover-color);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    }
+
+    button:active {
+      transform: translateY(0);
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+
+    .footer {
+      margin-top: 40px;
+      font-size: 0.9em;
+      opacity: 0.7;
+    }
+
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+      .container {
+        padding: 25px;
+        width: 90%;
+      }
+      h1 {
+        font-size: 2.2em;
+      }
+      #quote-display {
+        font-size: 1.4em;
+        padding: 20px;
+      }
+      button {
+        padding: 12px 20px;
+        font-size: 1em;
+      }
+    }
+
+    @media (max-width: 480px) {
+      h1 {
+        font-size: 1.8em;
+      }
+      #quote-display {
+        font-size: 1.2em;
+        min-height: 60px;
+      }
+      .controls {
+        flex-direction: column;
+        gap: 10px;
+      }
     }
   </style>
 </head>
 <body>
-  <h1>Random Sitcom Quote</h1>
-  <p id="quote" aria-live="polite">Click the button to get a quote!</p>
-  <img id="character-image" src="" alt="Character or Scene" style="display:none;" />
-  <br>
-  <button onclick="generateQuote()">Get Quote</button>
+  <div class="container">
+    <h1>Random Sitcom Quote</h1>
+    <div id="quote-display" aria-live="polite">
+      <p id="quote-text">Click the button to get a quote!</p>
+      <p id="quote-sitcom"></p>
+    </div>
+    <img id="character-image" src="" alt="Character or Scene" />
+    <div class="controls">
+      <button id="generateQuoteBtn">Get New Quote</button>
+      <button id="tweetQuoteBtn" style="display: none;">Tweet Quote</button>
+    </div>
+    <div class="footer">
+      <p>&copy; 2025 Sitcom Quote Generator. All rights reserved.</p>
+    </div>
+  </div>
 
   <script src="random_Quote_sitcom.js"></script>
 </body>
