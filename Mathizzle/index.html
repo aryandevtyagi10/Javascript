@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Math Puzzle Game</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>🧠 Math Puzzle Game</h1>
+    <div class="puzzle-box">
+      <p id="question">Loading...</p>
+      <input type="number" id="answer" placeholder="Enter your answer" />
+      <button onclick="checkAnswer()">Check Answer</button>
+      <p id="result"></p>
+      <button onclick="generatePuzzle()">Next Puzzle</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
